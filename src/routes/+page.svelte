@@ -14,7 +14,8 @@
 <main class="index">
 	<h1>TRMNL Screens</h1>
 	<p class="hint">
-		Screens are token-protected: append <code>?token=&hellip;</code> when previewing in a browser.
+		Screens are open in local dev; deployed they need <code>?token=&hellip;</code> (or a Bearer header)
+		once per browser.
 	</p>
 	{#each screens as screen (screen.slug)}
 		<section>

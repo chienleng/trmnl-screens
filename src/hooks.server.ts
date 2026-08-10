@@ -18,19 +18,19 @@ function tokensMatch(a: string, b: string): boolean {
 // `Authorization: Bearer <token>` (configured as a custom header on the plugin);
 // browsers can use `?token=` once, which is then remembered in a cookie.
 export const handle: Handle = async ({ event, resolve }) => {
-	// During `vite build` the prerender crawler follows the index page's links
-	// into /screens/* (which it then discards — they're prerender = false), and
-	// touching url.searchParams in that phase is an error. Auth only matters on
-	// the deployed worker, so skip the guard entirely while building.
-	if (building || !event.url.pathname.startsWith('/screens')) {
+	// Skipped while building — the prerender crawler follows the index page's
+	// links into /screens/* (then discards them; they're prerender = false),
+	// and touching url.searchParams in that phase is an error. Skipped in dev —
+	// the guard exists for the public internet, not for localhost friction.
+	// `pnpm preview` (wrangler) still enforces it, matching production.
+	if (dev || building || !event.url.pathname.startsWith('/screens')) {
 		return resolve(event);
 	}
 
 	const secret = event.platform?.env?.SCREENS_TOKEN;
 	if (!secret) {
-		// No token configured: open in local dev, locked in production —
-		// failing open in prod would silently publish the screens.
-		if (dev) return resolve(event);
+		// Locked rather than open — failing open would silently publish the
+		// screens the moment the secret went missing.
 		return new Response('SCREENS_TOKEN is not configured', { status: 401 });
 	}
 
