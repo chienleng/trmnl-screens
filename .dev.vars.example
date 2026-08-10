@@ -1,0 +1,4 @@
+# Copy to .dev.vars (gitignored). `pnpm check` / `wrangler types` picks these up
+# so they appear on the generated Env type.
+OPENELECTRICITY_API_KEY=""
+SCREENS_TOKEN=""

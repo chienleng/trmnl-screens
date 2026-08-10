@@ -1,0 +1,19 @@
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"rewriteRelativeImportExtensions": true,
+		"allowJs": true,
+		// Source is all-TS. checkJs must stay off: wrangler types embeds
+		// `typeof import(…/_worker)` once a build exists, and checkJs would
+		// then type-check SvelteKit's bundled output chunks.
+		"checkJs": false,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"moduleResolution": "bundler",
+		"types": ["./worker-configuration.d.ts"]
+	}
+}

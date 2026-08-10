@@ -1,0 +1,44 @@
+/* ==========================================================================
+   trmnl-screens — global layer
+
+   The design system comes from @chienleng/stratum-ui (neutral theme, --su-*
+   tokens), imported once in +layout.svelte. Screens are rendered inside
+   <ScreenFrame>, which pins exact device dimensions and applies the e-ink
+   token overrides from eink.css. This file only holds the reset and base
+   element styles; build ON TOP of --su-* tokens here — never redefine them.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: var(--su-font-sans);
+	font-size: var(--su-font-size-md);
+	font-weight: var(--su-font-weight-normal);
+	line-height: var(--su-leading-normal);
+	color: var(--su-text);
+	background: var(--su-surface);
+	/* E-ink is screenshotted, not read on an LCD: geometric precision beats
+	   subpixel smoothing, and antialiased edges dither badly at 1-bit. */
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+	display: block;
+	max-width: 100%;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}

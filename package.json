@@ -1,0 +1,45 @@
+{
+	"name": "trmnl-screens",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"engines": {
+		"node": ">=22.12"
+	},
+	"packageManager": "pnpm@11.15.1",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
+		"deploy": "pnpm run build && wrangler deploy",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "wrangler types && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write .",
+		"gen": "wrangler types"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"@sveltejs/adapter-cloudflare": "^7.2.9",
+		"@sveltejs/kit": "^2.70.1",
+		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"@types/node": "^22.20.1",
+		"eslint": "^10.7.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-svelte": "^3.22.0",
+		"globals": "^17.7.0",
+		"prettier": "^3.9.6",
+		"prettier-plugin-svelte": "^4.1.1",
+		"svelte": "^5.56.7",
+		"svelte-check": "^4.7.3",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.65.0",
+		"vite": "^8.1.5",
+		"wrangler": "^4.113.0"
+	},
+	"dependencies": {
+		"@chienleng/stratum-ui": "^0.11.0",
+		"openelectricity": "^0.9.1"
+	}
+}

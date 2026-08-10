@@ -1,0 +1,145 @@
+/**
+ * trmnl-screens · Brutalist theme
+ *
+ * A black-and-white brutalist skin over stratum-ui, applied via
+ * `<html data-theme="brutalist">` — the `[data-theme]` arm (specificity 0,1,0)
+ * beats neutral.css's zero-specificity `:where(:root)` arm, so this file only
+ * needs to redeclare what changes. Custom-property declarations only.
+ *
+ * Design rules:
+ *  - Ink on paper: pure #000 on #fff; colour tokens (status, data accent,
+ *    series) collapse to greyscale.
+ *  - Every grey is 4-bit-exact (#111, #222 … #eee) so the TRMNL X's 16-level
+ *    panel renders them without quantisation; the OG dithers them at 1-bit.
+ *  - Hard geometry: zero radii, black borders, solid offset shadows, no blur.
+ *  - Monospace display type — the spec-sheet voice, and crisp on e-ink.
+ */
+[data-theme='brutalist'] {
+	/* ── primitives (quantised grey ramp) ─────────────────────────────── */
+	--su-gray-50: #ffffff;
+	--su-gray-100: #eeeeee;
+	--su-gray-200: #dddddd;
+	--su-gray-300: #bbbbbb;
+	--su-gray-400: #999999;
+	--su-gray-500: #777777;
+	--su-gray-600: #555555;
+	--su-gray-700: #333333;
+	--su-gray-800: #000000;
+	--su-gray-900: #000000;
+
+	/* ── typography ───────────────────────────────────────────────────── */
+	--su-font-sans: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+	--su-font-display: var(--su-font-mono);
+	--su-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+	--su-font-weight-normal: 400;
+	--su-font-weight-medium: 600;
+	--su-font-weight-semibold: 700;
+
+	/* ── radii: none — hard corners only ──────────────────────────────── */
+	--su-radius-xs: 0px;
+	--su-radius-sm: 0px;
+	--su-radius-md: 0px;
+	--su-radius-lg: 0px;
+	--su-radius-xl: 0px;
+	--su-radius-full: 0px;
+
+	/* ── shadows: solid offset slabs, never blur ──────────────────────── */
+	--su-shadow-xs: 2px 2px 0 0 #000000;
+	--su-shadow-sm: 2px 2px 0 0 #000000;
+	--su-shadow-md: 4px 4px 0 0 #000000;
+	--su-shadow-lg: 6px 6px 0 0 #000000;
+
+	/* ── motion: e-ink doesn't animate ────────────────────────────────── */
+	--su-duration-fast: 0ms;
+	--su-duration-normal: 0ms;
+
+	/* ── focus ────────────────────────────────────────────────────────── */
+	--su-focus-ring-width: 3px;
+	--su-focus-ring: #000000;
+
+	/* ── semantic colours ─────────────────────────────────────────────── */
+	--su-surface: #ffffff;
+	--su-surface-muted: #ffffff;
+	--su-surface-strong: #eeeeee;
+	--su-surface-emphasis: #dddddd;
+	--su-surface-inverse: #000000;
+
+	--su-text: #000000;
+	--su-text-secondary: #000000;
+	--su-text-muted: #333333;
+	--su-text-subtle: #777777;
+	--su-text-faint: #bbbbbb;
+	--su-text-inverse: #ffffff;
+
+	--su-accent: #000000;
+	--su-accent-hover: #333333;
+	--su-accent-contrast: #ffffff;
+
+	--su-border: #000000;
+	--su-border-muted: #999999;
+	--su-border-strong: #000000;
+	--su-border-emphasis: #000000;
+
+	/* Status collapses to ink: meaning comes from text, not hue. */
+	--su-danger: #000000;
+	--su-success: #000000;
+	--su-warning: #000000;
+
+	--su-danger-50: #ffffff;
+	--su-danger-200: #dddddd;
+	--su-danger-500: #000000;
+	--su-danger-600: #000000;
+	--su-danger-800: #000000;
+
+	--su-warning-50: #ffffff;
+	--su-warning-100: #eeeeee;
+	--su-warning-200: #dddddd;
+	--su-warning-500: #000000;
+	--su-warning-600: #000000;
+	--su-warning-700: #000000;
+	--su-warning-800: #000000;
+
+	--su-success-50: #ffffff;
+	--su-success-100: #eeeeee;
+	--su-success-500: #000000;
+	--su-success-600: #000000;
+	--su-success-700: #000000;
+
+	--su-data-accent-50: #ffffff;
+	--su-data-accent-100: #eeeeee;
+	--su-data-accent-300: #bbbbbb;
+	--su-data-accent-500: #000000;
+	--su-data-accent-600: #000000;
+	--su-data-accent-900: #000000;
+
+	--su-overlay: rgb(0 0 0 / 0.5);
+	--su-tooltip-bg: #000000;
+	--su-tooltip-text: #ffffff;
+
+	/* ── chart tokens ─────────────────────────────────────────────────── */
+	--su-chart-surface: #ffffff;
+	--su-chart-grid: #dddddd;
+	--su-chart-grid-strong: #000000;
+	--su-chart-axis-text: #000000;
+	--su-chart-tick: #000000;
+	--su-chart-focus: #000000;
+	--su-chart-brush-handle: #000000;
+	--su-chart-brush-selection: rgb(0 0 0 / 0.08);
+	--su-chart-annotation: #000000;
+
+	/* Series palette: greyscale, ordered dark/light alternating so adjacent
+	   stacked bands always separate. */
+	--su-chart-series-1: #000000;
+	--su-chart-series-2: #bbbbbb;
+	--su-chart-series-3: #555555;
+	--su-chart-series-4: #eeeeee;
+	--su-chart-series-5: #777777;
+	--su-chart-series-6: #222222;
+	--su-chart-series-7: #999999;
+	--su-chart-series-8: #444444;
+	--su-chart-series-9: #dddddd;
+	--su-chart-series-10: #666666;
+	--su-chart-series-11: #111111;
+	--su-chart-series-12: #888888;
+}
