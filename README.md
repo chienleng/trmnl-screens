@@ -9,6 +9,10 @@ TRMNL's hosted cloud renders the screens with its **Screenshot plugin**: it
 points a headless browser at a screen URL on each refresh and handles the
 per-device dithering and dimensions.
 
+The NEM energy screen instead ships as a **private plugin** (see below) —
+client-side charts don't survive the Screenshot plugin's capture timing, so
+TRMNL polls `/api/energy` for JSON and renders the chart itself.
+
 ## Screens
 
 Each screen renders at exact panel dimensions per device:
@@ -65,6 +69,36 @@ TRMNL side, per device: add the Screenshot plugin →
 `https://trmnl.chienleng.com/screens/<device>/<screen>` with header
 `Authorization: Bearer <token>`, enable "Always refresh" (charts render
 client-side), refresh 15 min.
+
+## Private plugin (NEM Power)
+
+`trmnl/nem-power/` is a TRMNL
+[private plugin](https://help.trmnl.com/en/articles/9510536-private-plugins)
+(polling strategy). TRMNL GETs `/api/energy` every 15 min — a Highcharts-ready
+JSON payload (15-min buckets, pre-formatted stats) — and renders the stacked
+area chart itself with the framework-hosted Highcharts + `TRMNLCharts` dither
+helper. The payload is deterministic, so TRMNL only refreshes the e-ink when
+the data actually changed. `/screens/<device>/energy` remains as a browser
+preview.
+
+The endpoint sits behind the same `SCREENS_TOKEN` guard as `/screens/*`
+(`Authorization: Bearer …`).
+
+Local preview with [trmnlp](https://github.com/usetrmnl/trmnlp) — it polls the
+**deployed** worker (the dev server's `*.localhost` bind is IPv6-only, which
+Docker can't reach from a container):
+
+```bash
+cd trmnl/nem-power
+SCREENS_TOKEN=<token> docker run --pull always -p 4567:4567 \
+  -v "$(pwd):/plugin" -e SCREENS_TOKEN trmnl/trmnlp serve --bind 0.0.0.0
+# open http://localhost:4567; `build --png` renders the four layouts headlessly
+```
+
+TRMNL side: Plugins → Private Plugin → import a flat zip of the five files in
+`trmnl/nem-power/src/` (or `trmnlp login && trmnlp push`), then fill in the
+**Base URL** (`https://trmnl.chienleng.com`) and **Screens token** custom
+fields and Force Refresh.
 
 ## Notes
 

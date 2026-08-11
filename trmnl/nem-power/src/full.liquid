@@ -1,0 +1,114 @@
+{% assign chart_id = 'nem-chart-' | append_random %}
+
+<script src="https://trmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
+
+<div class="layout layout--col gap--medium">
+  {% if ok %}
+    <div class="grid grid--cols-3">
+      <div class="item">
+        <div class="content">
+          <span class="value value--tnums">{{ renewable_pct }}%</span>
+          <span class="label">Renewables</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="content">
+          <span class="value value--tnums">{{ total_gw }} GW</span>
+          <span class="label">Generation</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="content">
+          <span class="value value--tnums">{{ peak_gw }} GW</span>
+          <span class="label">24h peak</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="{{ chart_id }}" class="w--full"></div>
+
+    <div class="flex flex--row flex--wrap gap--large">
+      {% assign series_count = series | size %}
+      {% for s in series %}
+        <div class="flex flex--row flex--center-y gap--xsmall">
+          <span class="rounded--full"
+                style="width: 12px; height: 12px; display: inline-block;"
+                data-chart-series="{{ forloop.index0 }}"
+                data-chart-series-count="{{ series_count }}"></span>
+          <span class="label label--small">{{ s.name }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="item">
+      <div class="content">
+        <span class="value">No data</span>
+        <span class="label">{{ error }}</span>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">NEM Power</span>
+  <span class="instance">Data to {{ updated_at }}</span>
+</div>
+
+{% if ok %}
+<script>
+  (function () {
+    var SERIES = {{ series | json }};
+    var POINT_START = {{ point_start }};
+    var POINT_INTERVAL = {{ point_interval }};
+    var HOUR = 3600 * 1000;
+
+    // TRMNL's screenshot service captures shortly after load — poll until the
+    // framework (TRMNLCharts) and Highcharts are both ready, ~10s ceiling.
+    function whenReady(fn, tries) {
+      if (window.Highcharts && window.TRMNLCharts) return fn();
+      if ((tries || 0) > 100) return;
+      setTimeout(function () { whenReady(fn, (tries || 0) + 1); }, 100);
+    }
+
+    whenReady(function () {
+      var el = document.getElementById('{{ chart_id }}');
+      // TRMNLPaint resolves device-profile-scaled pixels (OG vs X etc.).
+      var height = window.TRMNLPaint ? TRMNLPaint.px(260, { el: el }) : 260;
+
+      var options = TRMNLCharts.merge(TRMNLCharts.options({ el: el }), {
+        chart: { type: 'area', animation: false, height: height },
+        title: { text: undefined },
+        credits: { enabled: false },
+        legend: { enabled: false },
+        time: { useUTC: true }, // point_start is Brisbane wall-clock shifted to UTC
+        xAxis: {
+          type: 'datetime',
+          tickInterval: 4 * HOUR,
+          labels: { format: '{value:%H:%M}' }
+        },
+        yAxis: {
+          title: { text: undefined },
+          labels: {
+            formatter: function () { return this.value / 1000 + ' GW'; }
+          }
+        },
+        plotOptions: {
+          // White hairline between bands so the stacked series stay
+          // distinguishable once dithered on 1-bit panels.
+          area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 1, lineColor: '#ffffff' },
+          series: { animation: false, pointStart: POINT_START, pointInterval: POINT_INTERVAL }
+        },
+        series: SERIES.map(function (s, i) {
+          return Object.assign(
+            { name: s.name, data: s.data },
+            TRMNLCharts.series(i, SERIES.length, { el: el })
+          );
+        })
+      });
+
+      Highcharts.chart(el, options);
+      TRMNLCharts.applySwatches({ el: document.body });
+    });
+  })();
+</script>
+{% endif %}

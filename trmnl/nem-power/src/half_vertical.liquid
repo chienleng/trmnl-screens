@@ -1,0 +1,30 @@
+<div class="layout layout--col layout--center gap--small">
+  {% if ok %}
+    <div class="item">
+      <div class="content">
+        <span class="value value--tnums">{{ renewable_pct }}%</span>
+        <span class="label">Renewables</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="content">
+        <span class="value value--tnums">{{ total_gw }} GW</span>
+        <span class="label">Generation</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="content">
+        <span class="value value--tnums">{{ peak_gw }} GW</span>
+        <span class="label">24h peak</span>
+      </div>
+    </div>
+  {% else %}
+    <span class="value">No data</span>
+    <span class="label">{{ error }}</span>
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">NEM Power</span>
+  <span class="instance">{{ updated_at }}</span>
+</div>
