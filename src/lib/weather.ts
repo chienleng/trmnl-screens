@@ -18,3 +18,27 @@ const WEATHER_CODES: Array<[codes: number[], label: string]> = [
 export function weatherLabel(code: number): string {
 	return WEATHER_CODES.find(([codes]) => codes.includes(code))?.[1] ?? '—';
 }
+
+const COMPASS = [
+	'N',
+	'NNE',
+	'NE',
+	'ENE',
+	'E',
+	'ESE',
+	'SE',
+	'SSE',
+	'S',
+	'SSW',
+	'SW',
+	'WSW',
+	'W',
+	'WNW',
+	'NW',
+	'NNW'
+];
+
+/** Meteorological wind direction (degrees the wind blows *from*) → compass point. */
+export function windDirection(degrees: number): string {
+	return COMPASS[Math.round(degrees / 22.5) % 16];
+}

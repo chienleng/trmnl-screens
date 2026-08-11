@@ -1,0 +1,30 @@
+<div class="layout layout--col layout--center gap--small">
+  {% if ok %}
+    <div class="item">
+      <div class="content">
+        <span class="value value--tnums">{{ temp }}&deg;</span>
+        <span class="label">{{ conditions }}</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="content">
+        <span class="value value--tnums">{{ feels_like }}&deg;</span>
+        <span class="label">Feels like</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="content">
+        <span class="value value--tnums">{{ rain_peak }}%</span>
+        <span class="label">Peak rain chance</span>
+      </div>
+    </div>
+  {% else %}
+    <span class="value">No data</span>
+    <span class="label">{{ error }}</span>
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">{{ location }} Weather</span>
+  <span class="instance">{{ observed_at }}</span>
+</div>

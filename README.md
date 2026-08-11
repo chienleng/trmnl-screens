@@ -70,35 +70,49 @@ TRMNL side, per device: add the Screenshot plugin →
 `Authorization: Bearer <token>`, enable "Always refresh" (charts render
 client-side), refresh 15 min.
 
-## Private plugin (NEM Power)
+## Private plugins
 
-`trmnl/nem-power/` is a TRMNL
-[private plugin](https://help.trmnl.com/en/articles/9510536-private-plugins)
-(polling strategy). TRMNL GETs `/api/energy` every 15 min — a Highcharts-ready
-JSON payload (15-min buckets, pre-formatted stats) — and renders the stacked
-area chart itself with the framework-hosted Highcharts + `TRMNLCharts` dither
-helper. The payload is deterministic, so TRMNL only refreshes the e-ink when
-the data actually changed. `/screens/<device>/energy` remains as a browser
-preview.
+Charts can't survive the Screenshot plugin — they render client-side, and the
+capture fires before hydration. These screens are
+[private plugins](https://help.trmnl.com/en/articles/9510536-private-plugins)
+instead: TRMNL polls a JSON endpoint here and renders the chart itself with
+framework-hosted Highcharts + the `TRMNLCharts` dither helper.
 
-The endpoint sits behind the same `SCREENS_TOKEN` guard as `/screens/*`
-(`Authorization: Bearer …`).
+| Plugin            | Endpoint       | Data                                           | Preview port |
+| ----------------- | -------------- | ---------------------------------------------- | ------------ |
+| `trmnl/nem-power` | `/api/energy`  | OpenElectricity NEM generation, 15-min buckets | 4567         |
+| `trmnl/weather`   | `/api/weather` | Open-Meteo, next 24 h hourly temp + rain       | 4568         |
+
+Both endpoints sit behind the same `SCREENS_TOKEN` guard as `/screens/*`
+(`Authorization: Bearer …`), and both payloads are pre-shaped for Liquid — flat
+root keys, formatted display strings, and series in Highcharts'
+`pointStart`/`pointInterval` form.
+
+The energy payload is deterministic, so TRMNL skips regeneration until the data
+actually changes; the weather payload carries an observation time, so it
+repaints each poll. `/screens/<device>/energy` and `/dashboard` remain as
+browser previews.
+
+Weather data is © [Open-Meteo](https://open-meteo.com) under CC BY 4.0 —
+the attribution in the title bar is a licence requirement, not decoration.
 
 Local preview with [trmnlp](https://github.com/usetrmnl/trmnlp) — it polls the
 **deployed** worker (the dev server's `*.localhost` bind is IPv6-only, which
 Docker can't reach from a container):
 
 ```bash
-cd trmnl/nem-power
-SCREENS_TOKEN=<token> docker run --pull always -p 4567:4567 \
+cd trmnl/weather   # or trmnl/nem-power, with -p 4567:4567
+SCREENS_TOKEN=<token> docker run --pull always -p 4568:4567 \
   -v "$(pwd):/plugin" -e SCREENS_TOKEN trmnl/trmnlp serve --bind 0.0.0.0
-# open http://localhost:4567; `build --png` renders the four layouts headlessly
+# open http://localhost:4568; `build --png` renders the four layouts headlessly
 ```
 
-TRMNL side: Plugins → Private Plugin → import a flat zip of the five files in
-`trmnl/nem-power/src/` (or `trmnlp login && trmnlp push`), then fill in the
-**Base URL** (`https://trmnl.chienleng.com`) and **Screens token** custom
-fields and Force Refresh.
+TRMNL side, per plugin: [Private Plugin settings](https://usetrmnl.com/plugin_settings?keyname=private_plugin)
+→ **Import new** with a flat zip of the five files in that plugin's `src/`
+(or `trmnlp login && trmnlp push`), then fill in the **Base URL**
+(`https://trmnl.chienleng.com`) and **Screens token** custom fields and Force
+Refresh. The token is only ever entered in the dashboard — `settings.yml`
+interpolates it via `{{ screens_token }}`.
 
 ## Notes
 

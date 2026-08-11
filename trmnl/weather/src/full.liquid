@@ -1,0 +1,117 @@
+{% assign chart_id = 'weather-chart-' | append_random %}
+
+<script src="https://trmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
+
+<div class="layout layout--col layout--top layout--left gap--small">
+  {% if ok %}
+    <div class="flex flex--row flex--between flex--bottom w--full">
+      <div class="flex flex--row flex--bottom gap--small">
+        <span class="value value--xxlarge value--tnums">{{ temp }}&deg;</span>
+        <span class="title mb--1">{{ conditions }}</span>
+      </div>
+      <div class="text--right">
+        <span class="label">UV {{ uv_max }} &middot; &uarr; {{ sunrise }} &darr; {{ sunset }}</span>
+      </div>
+    </div>
+
+    <span class="description w--full text--left">
+      Feels {{ feels_like }}&deg; &middot; {{ wind }} &middot; humidity {{ humidity }}%
+    </span>
+
+    <div id="{{ chart_id }}" class="w--full"></div>
+
+    <div class="flex flex--row flex--between w--full">
+      <span class="label label--small">Next 24 hours</span>
+      <span class="label label--small">Rain peaks at {{ rain_peak }}%</span>
+    </div>
+  {% else %}
+    <div class="item">
+      <div class="content">
+        <span class="value">No data</span>
+        <span class="label">{{ error }}</span>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">{{ location }} Weather</span>
+  <span class="instance">Now {{ observed_at }} &middot; Open-Meteo</span>
+</div>
+
+{% if ok %}
+<script>
+  (function () {
+    var TEMPS = {{ temps | json }};
+    var RAIN = {{ rain | json }};
+    var POINT_START = {{ point_start }};
+    var POINT_INTERVAL = {{ point_interval }};
+    var HOUR = 3600 * 1000;
+
+    // TRMNL's screenshot service captures shortly after load — poll until the
+    // framework (TRMNLCharts) and Highcharts are both ready, ~10s ceiling.
+    function whenReady(fn, tries) {
+      if (window.Highcharts && window.TRMNLCharts) return fn();
+      if ((tries || 0) > 100) return;
+      setTimeout(function () { whenReady(fn, (tries || 0) + 1); }, 100);
+    }
+
+    whenReady(function () {
+      var el = document.getElementById('{{ chart_id }}');
+      var height = window.TRMNLPaint ? TRMNLPaint.px(235, { el: el }) : 235;
+
+      var options = TRMNLCharts.merge(TRMNLCharts.options({ el: el }), {
+        chart: { animation: false, height: height },
+        title: { text: undefined },
+        credits: { enabled: false },
+        legend: { enabled: false },
+        time: { useUTC: true }, // point_start is local wall-clock shifted to UTC
+        xAxis: {
+          type: 'datetime',
+          tickInterval: 3 * HOUR,
+          labels: { format: '{value:%H}' }
+        },
+        yAxis: [
+          {
+            // Temperature, left. Whole degrees only, and five ticks so the
+            // gridlines line up with the rain axis opposite.
+            title: { text: undefined },
+            allowDecimals: false,
+            tickAmount: 5,
+            labels: { format: '{value}°' }
+          },
+          {
+            // Rain probability, right — pinned to 0-100 so bar heights read as
+            // percentages rather than rescaling with the day's maximum.
+            title: { text: undefined },
+            min: 0,
+            max: 100,
+            endOnTick: false,
+            tickPositions: [0, 25, 50, 75, 100],
+            opposite: true,
+            gridLineWidth: 0,
+            labels: { format: '{value}%' }
+          }
+        ],
+        plotOptions: {
+          series: { animation: false, pointStart: POINT_START, pointInterval: POINT_INTERVAL },
+          column: { borderWidth: 0, groupPadding: 0.05, pointPadding: 0 },
+          spline: { marker: { enabled: false }, lineWidth: 3 }
+        },
+        series: [
+          Object.assign(
+            { name: 'Rain', type: 'column', data: RAIN, yAxis: 1 },
+            TRMNLCharts.series(1, 2, { el: el })
+          ),
+          Object.assign(
+            { name: 'Temp', type: 'spline', data: TEMPS, yAxis: 0, zIndex: 2 },
+            TRMNLCharts.series(0, 2, { el: el })
+          )
+        ]
+      });
+
+      Highcharts.chart(el, options);
+    });
+  })();
+</script>
+{% endif %}

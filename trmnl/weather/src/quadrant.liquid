@@ -1,0 +1,12 @@
+<div class="layout layout--col layout--center">
+  {% if ok %}
+    <span class="value value--xlarge value--tnums">{{ temp }}&deg;</span>
+    <span class="label">{{ conditions }}</span>
+  {% else %}
+    <span class="value">No data</span>
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">{{ location }} Weather</span>
+</div>

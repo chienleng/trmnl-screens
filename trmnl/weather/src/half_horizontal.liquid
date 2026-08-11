@@ -1,0 +1,14 @@
+<div class="layout layout--col layout--center">
+  {% if ok %}
+    <span class="value value--xlarge value--tnums">{{ temp }}&deg;</span>
+    <span class="label">{{ conditions }} &middot; feels {{ feels_like }}&deg; &middot; rain to {{ rain_peak }}%</span>
+  {% else %}
+    <span class="value">No data</span>
+    <span class="label">{{ error }}</span>
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">{{ location }} Weather</span>
+  <span class="instance">{{ observed_at }}</span>
+</div>

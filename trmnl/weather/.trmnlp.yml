@@ -1,0 +1,15 @@
+---
+# Local config for the trmnlp previewer (https://github.com/usetrmnl/trmnlp).
+# Polls the deployed worker — see trmnl/nem-power/.trmnlp.yml for why local
+# dev isn't reachable from Docker. Run from this directory:
+#
+#   SCREENS_TOKEN=<token> docker run --pull always -p 4568:4567 \
+#     -v "$(pwd):/plugin" -e SCREENS_TOKEN trmnl/trmnlp serve --bind 0.0.0.0
+#
+# then open http://localhost:4568 (4567 is nem-power's preview).
+watch:
+  - src
+time_zone: Australia/Melbourne
+custom_fields:
+  base_url: https://trmnl.chienleng.com
+  screens_token: '{{ env.SCREENS_TOKEN }}'
