@@ -21,8 +21,11 @@
 
 {#if data.weather}
 	{@const w = data.weather}
+	<!-- The middle slot credits Open-Meteo: their data is CC BY 4.0, so the
+	     attribution is a licence condition, not decoration. Do not remove it. -->
 	<div class="screen-head label">
 		<span>{w.location}</span>
+		<span>{w.observedAt} &middot; Open-Meteo</span>
 		<span>{w.dateLabel}</span>
 	</div>
 	<div class="rule"></div>

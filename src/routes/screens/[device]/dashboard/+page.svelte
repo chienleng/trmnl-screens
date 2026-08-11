@@ -54,6 +54,10 @@
 			<Columns values={w.rain} width={rainWidth} height={28 * scale} max={100} {scale} />
 		</div>
 	</div>
+	<!-- Credits Open-Meteo for the weather block above: their data is CC BY 4.0,
+	     so the attribution is a licence condition, not decoration. It sits here
+	     rather than in the screen header because only this row is their data. -->
+	<div class="source label">Weather &middot; Open-Meteo &middot; {w.observedAt}</div>
 {/if}
 
 <div class="cols" class:cols--x={isX}>
@@ -110,6 +114,11 @@
 
 	.rain-cell .label {
 		margin-bottom: var(--sp-1);
+	}
+
+	.source {
+		margin-top: var(--sp-2);
+		text-align: right;
 	}
 
 	.cols {

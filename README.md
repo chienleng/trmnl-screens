@@ -110,57 +110,26 @@ docker run --rm -v "$PWD/shots:/shots" zenika/alpine-chrome \
   "http://host.docker.internal:4173/screens/og/energy?token=<token>"
 ```
 
-## Private plugins (superseded)
+## Data sources
 
-> Kept for reference, not in use. These were the answer to the blank-chart
-> problem before the screens rendered charts server-side; the Screenshot
-> plugin now handles every screen, with far more layout freedom than Liquid
-> templates allowed. Delete `trmnl/` and `src/routes/api/` if you want them
-> gone — `src/lib/server/{energy,weather}.ts` is shared with the screens and
-> must stay.
+| Screen             | Source                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| Energy             | [OpenElectricity](https://openelectricity.org.au) v4 API, NEM power at 5-min intervals |
+| Weather, Dashboard | [Open-Meteo](https://open-meteo.com) forecast API                                      |
 
-[Private plugins](https://help.trmnl.com/en/articles/9510536-private-plugins)
-have TRMNL poll a JSON endpoint here and render the chart itself with
-framework-hosted Highcharts + the `TRMNLCharts` dither helper.
-
-| Plugin            | Endpoint       | Data                                           | Preview port |
-| ----------------- | -------------- | ---------------------------------------------- | ------------ |
-| `trmnl/nem-power` | `/api/energy`  | OpenElectricity NEM generation, 15-min buckets | 4567         |
-| `trmnl/weather`   | `/api/weather` | Open-Meteo, next 24 h hourly temp + rain       | 4568         |
-
-Both endpoints sit behind the same `SCREENS_TOKEN` guard as `/screens/*`
-(`Authorization: Bearer …`), and both payloads are pre-shaped for Liquid — flat
-root keys, formatted display strings, and series in Highcharts'
-`pointStart`/`pointInterval` form.
-
-The energy payload is deterministic, so TRMNL skips regeneration until the data
-actually changes; the weather payload carries an observation time, so it
-repaints each poll. `/screens/<device>/energy` and `/dashboard` remain as
-browser previews.
-
-Weather data is © [Open-Meteo](https://open-meteo.com) under CC BY 4.0 —
-the attribution in the title bar is a licence requirement, not decoration.
-
-Local preview with [trmnlp](https://github.com/usetrmnl/trmnlp) — it polls the
-**deployed** worker (the dev server's `*.localhost` bind is IPv6-only, which
-Docker can't reach from a container):
-
-```bash
-cd trmnl/weather   # or trmnl/nem-power, with -p 4567:4567
-SCREENS_TOKEN=<token> docker run --pull always -p 4568:4567 \
-  -v "$(pwd):/plugin" -e SCREENS_TOKEN trmnl/trmnlp serve --bind 0.0.0.0
-# open http://localhost:4568; `build --png` renders the four layouts headlessly
-```
-
-TRMNL side, per plugin: [Private Plugin settings](https://usetrmnl.com/plugin_settings?keyname=private_plugin)
-→ **Import new** with a flat zip of the five files in that plugin's `src/`
-(or `trmnlp login && trmnlp push`), then fill in the **Base URL**
-(`https://trmnl.chienleng.com`) and **Screens token** custom fields and Force
-Refresh. The token is only ever entered in the dashboard — `settings.yml`
-interpolates it via `{{ screens_token }}`.
+Weather data is © Open-Meteo under CC BY 4.0, which requires visible
+attribution. Both screens that use it carry the credit, and it must stay: the
+weather screen puts it in the middle slot of the header, and the dashboard puts
+it under the weather row rather than in the header, because only that row is
+Open-Meteo data.
 
 ## Notes
 
+- Screens were once TRMNL [private plugins](https://help.trmnl.com/en/articles/9510536-private-plugins)
+  (`trmnl/` Liquid templates polling `/api/*` for Highcharts-shaped JSON) — the
+  workaround for charts that screenshotted blank before they rendered
+  server-side. Removed in full once SSR SVG made them redundant; see git
+  history if the polling payload shapes are ever wanted back.
 - `wrangler` is pinned to 4.113.0 and `checkJs` is off: newer `wrangler types`
   embeds `typeof import(…/_worker)` once a build exists, which would make
   svelte-check type-check SvelteKit's bundled output.

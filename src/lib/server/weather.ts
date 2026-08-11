@@ -111,31 +111,6 @@ function hourlyWindow(data: OpenMeteoResponse) {
 	};
 }
 
-export type WeatherPayload = {
-	ok: true;
-	error: null;
-	location: string;
-	date_label: string;
-	temp: number;
-	conditions: string;
-	feels_like: number;
-	wind: string;
-	humidity: number;
-	uv_max: number;
-	sunrise: string;
-	sunset: string;
-	observed_at: string;
-	/** Direct-labelling values, so the charts need no axes of their own. */
-	temp_min: number;
-	temp_max: number;
-	rain_peak: number;
-	rain_peak_at: string;
-	point_start: number;
-	point_interval: number;
-	temps: number[];
-	rain: number[];
-};
-
 export type WeatherScreenData = {
 	location: string;
 	dateLabel: string;
@@ -164,9 +139,9 @@ export type WeatherScreenData = {
 const DAY_LABEL = new Intl.DateTimeFormat('en-AU', { weekday: 'short', timeZone: 'UTC' });
 
 /**
- * Shape for the rendered screens. Unlike the plugin payload this keeps numbers
- * as numbers — Svelte formats at the point of use, and the screens need the
- * raw series to compute chart geometry server-side.
+ * Shape for the rendered screens. Numbers stay numbers — Svelte formats at the
+ * point of use, and the screens need the raw series to compute chart geometry
+ * server-side.
  */
 export function toScreenData(data: OpenMeteoResponse): WeatherScreenData {
 	const { current, daily } = data;
@@ -203,42 +178,5 @@ export function toScreenData(data: OpenMeteoResponse): WeatherScreenData {
 			rain: Math.round(daily.precipitation_probability_max[i + 1] ?? 0),
 			conditions: weatherLabel(daily.weather_code[i + 1])
 		}))
-	};
-}
-
-/**
- * Shape for TRMNL's polling strategy: flat root keys (Liquid root scope),
- * display strings pre-formatted, and the hourly series in Highcharts'
- * compact pointStart/pointInterval form.
- */
-export function toPluginPayload(data: OpenMeteoResponse): WeatherPayload {
-	const { current, daily } = data;
-	const { times, temps, rain } = hourlyWindow(data);
-
-	const peakRain = rain.length > 0 ? Math.max(...rain) : 0;
-	const peakIndex = rain.indexOf(peakRain);
-
-	return {
-		ok: true,
-		error: null,
-		location: LOCATION.name,
-		date_label: DATE_LABEL.format(new Date(fakeUtcEpoch(current.time))),
-		temp: Math.round(current.temperature_2m),
-		conditions: weatherLabel(current.weather_code),
-		feels_like: Math.round(current.apparent_temperature),
-		wind: `${windDirection(current.wind_direction_10m)} ${Math.round(current.wind_speed_10m)}`,
-		humidity: Math.round(current.relative_humidity_2m),
-		uv_max: Math.round(daily.uv_index_max[0] ?? 0),
-		sunrise: clockTime(daily.sunrise[0]),
-		sunset: clockTime(daily.sunset[0]),
-		observed_at: clockTime(current.time),
-		temp_min: Math.round(Math.min(...temps)),
-		temp_max: Math.round(Math.max(...temps)),
-		rain_peak: peakRain,
-		rain_peak_at: peakRain > 0 && peakIndex >= 0 ? clockTime(times[peakIndex]) : '',
-		point_start: fakeUtcEpoch(times[0]),
-		point_interval: 60 * 60 * 1000,
-		temps: temps.map((t) => Math.round(t * 10) / 10),
-		rain
 	};
 }

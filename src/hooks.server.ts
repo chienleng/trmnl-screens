@@ -14,11 +14,12 @@ function tokensMatch(a: string, b: string): boolean {
 	return diff === 0;
 }
 
-// Token-protected prefixes: /screens/* (TRMNL's Screenshot plugin) and /api/*
-// (the private plugin's polling endpoint). Both send the token as
-// `Authorization: Bearer <token>` (configured on the plugin); browsers can use
-// `?token=` once on /screens, which is then remembered in a cookie. New /api
-// routes are protected by default — fail closed.
+// Token-protected prefixes. /screens/* is what TRMNL's Screenshot plugin
+// captures; it sends the token as `Authorization: Bearer <token>` via its
+// custom-headers field, and browsers can use `?token=` once, which is then
+// remembered in a cookie. /api carries no routes today — it stays listed so
+// any endpoint added there is protected by default rather than published by
+// omission.
 const PROTECTED = ['/screens', '/api'];
 
 /** API clients get a JSON 401 body; the browser-facing screens get plain text. */
