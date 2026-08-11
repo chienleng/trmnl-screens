@@ -17,9 +17,14 @@ type OpenMeteoResponse = {
 		precipitation_probability: (number | null)[];
 	};
 	daily: {
+		time: string[];
 		sunrise: string[];
 		sunset: string[];
 		uv_index_max: (number | null)[];
+		weather_code: number[];
+		temperature_2m_max: (number | null)[];
+		temperature_2m_min: (number | null)[];
+		precipitation_probability_max: (number | null)[];
 	};
 };
 
@@ -61,11 +66,15 @@ export async function fetchWeather(fetcher: typeof fetch = fetch): Promise<Weath
 		'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m'
 	);
 	url.searchParams.set('hourly', 'temperature_2m,precipitation_probability');
-	url.searchParams.set('daily', 'sunrise,sunset,uv_index_max');
+	url.searchParams.set(
+		'daily',
+		'sunrise,sunset,uv_index_max,weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+	);
 	url.searchParams.set('timezone', LOCATION.timeZone);
-	// Two days of hourly data so a 24h window starting at the current hour is
-	// always fully covered, whatever the time of day.
-	url.searchParams.set('forecast_days', '2');
+	// Five days: the hourly window only needs two (a 24h slice starting at the
+	// current hour, whatever the time of day), but the X panel has room for a
+	// multi-day outlook below the charts.
+	url.searchParams.set('forecast_days', '5');
 
 	try {
 		const response = await fetcher(url);
@@ -82,6 +91,25 @@ export async function fetchWeather(fetcher: typeof fetch = fetch): Promise<Weath
 }
 
 const HOURS = 24;
+
+/**
+ * The next 24 hourly samples starting at the current hour. Open-Meteo's grid
+ * starts at local midnight, so find where "now" falls on it rather than
+ * assuming an offset.
+ */
+function hourlyWindow(data: OpenMeteoResponse) {
+	const { current, hourly } = data;
+	const nowHour = current.time.slice(0, 13); // YYYY-MM-DDTHH
+	const start = Math.max(
+		0,
+		hourly.time.findIndex((t) => t.slice(0, 13) === nowHour)
+	);
+	return {
+		times: hourly.time.slice(start, start + HOURS),
+		temps: hourly.temperature_2m.slice(start, start + HOURS).map((t) => t ?? 0),
+		rain: hourly.precipitation_probability.slice(start, start + HOURS).map((p) => p ?? 0)
+	};
+}
 
 export type WeatherPayload = {
 	ok: true;
@@ -108,24 +136,84 @@ export type WeatherPayload = {
 	rain: number[];
 };
 
+export type WeatherScreenData = {
+	location: string;
+	dateLabel: string;
+	observedAt: string;
+	temp: number;
+	conditions: string;
+	feelsLike: number;
+	windDir: string;
+	windSpeed: number;
+	humidity: number;
+	uvMax: number;
+	sunrise: string;
+	sunset: string;
+	tempMin: number;
+	tempMax: number;
+	rainPeak: number;
+	rainPeakAt: string;
+	/** 24 hourly samples from the current hour. */
+	temps: number[];
+	rain: number[];
+	/** Hour labels at the quarter points, for the shared time scale. */
+	hourTicks: string[];
+	forecast: Array<{ day: string; min: number; max: number; rain: number; conditions: string }>;
+};
+
+const DAY_LABEL = new Intl.DateTimeFormat('en-AU', { weekday: 'short', timeZone: 'UTC' });
+
+/**
+ * Shape for the rendered screens. Unlike the plugin payload this keeps numbers
+ * as numbers — Svelte formats at the point of use, and the screens need the
+ * raw series to compute chart geometry server-side.
+ */
+export function toScreenData(data: OpenMeteoResponse): WeatherScreenData {
+	const { current, daily } = data;
+	const { times, temps, rain } = hourlyWindow(data);
+
+	const peakRain = rain.length > 0 ? Math.max(...rain) : 0;
+	const peakIndex = rain.indexOf(peakRain);
+
+	return {
+		location: LOCATION.name,
+		dateLabel: DATE_LABEL.format(new Date(fakeUtcEpoch(current.time))),
+		observedAt: clockTime(current.time),
+		temp: Math.round(current.temperature_2m),
+		conditions: weatherLabel(current.weather_code),
+		feelsLike: Math.round(current.apparent_temperature),
+		windDir: windDirection(current.wind_direction_10m),
+		windSpeed: Math.round(current.wind_speed_10m),
+		humidity: Math.round(current.relative_humidity_2m),
+		uvMax: Math.round(daily.uv_index_max[0] ?? 0),
+		sunrise: clockTime(daily.sunrise[0]),
+		sunset: clockTime(daily.sunset[0]),
+		tempMin: Math.round(Math.min(...temps)),
+		tempMax: Math.round(Math.max(...temps)),
+		rainPeak: peakRain,
+		rainPeakAt: peakRain > 0 && peakIndex >= 0 ? clockTime(times[peakIndex]) : '',
+		temps,
+		rain,
+		hourTicks: [0, 6, 12, 18, 23].map((i) => (times[i] ? clockTime(times[i]) : '')),
+		// Skip today — the panels above already cover the next 24 hours.
+		forecast: daily.time.slice(1).map((day, i) => ({
+			day: DAY_LABEL.format(new Date(`${day}T00:00Z`)),
+			min: Math.round(daily.temperature_2m_min[i + 1] ?? 0),
+			max: Math.round(daily.temperature_2m_max[i + 1] ?? 0),
+			rain: Math.round(daily.precipitation_probability_max[i + 1] ?? 0),
+			conditions: weatherLabel(daily.weather_code[i + 1])
+		}))
+	};
+}
+
 /**
  * Shape for TRMNL's polling strategy: flat root keys (Liquid root scope),
  * display strings pre-formatted, and the hourly series in Highcharts'
  * compact pointStart/pointInterval form.
  */
 export function toPluginPayload(data: OpenMeteoResponse): WeatherPayload {
-	const { current, hourly, daily } = data;
-
-	// Slice the next 24h starting at the current hour. Open-Meteo's hourly grid
-	// starts at midnight local, so find where "now" falls on it.
-	const nowHour = current.time.slice(0, 13); // YYYY-MM-DDTHH
-	const start = Math.max(
-		0,
-		hourly.time.findIndex((t) => t.slice(0, 13) === nowHour)
-	);
-	const times = hourly.time.slice(start, start + HOURS);
-	const temps = hourly.temperature_2m.slice(start, start + HOURS).map((t) => t ?? 0);
-	const rain = hourly.precipitation_probability.slice(start, start + HOURS).map((p) => p ?? 0);
+	const { current, daily } = data;
+	const { times, temps, rain } = hourlyWindow(data);
 
 	const peakRain = rain.length > 0 ? Math.max(...rain) : 0;
 	const peakIndex = rain.indexOf(peakRain);

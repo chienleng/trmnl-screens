@@ -9,32 +9,61 @@ TRMNL's hosted cloud renders the screens with its **Screenshot plugin**: it
 points a headless browser at a screen URL on each refresh and handles the
 per-device dithering and dimensions.
 
-The NEM energy screen instead ships as a **private plugin** (see below) —
-client-side charts don't survive the Screenshot plugin's capture timing, so
-TRMNL polls `/api/energy` for JSON and renders the chart itself.
+**Every screen is fully server-rendered, charts included.** Nothing waits on
+hydration, so the capture cannot race the page — verified by screenshotting
+each screen with JavaScript disabled.
 
 ## Screens
 
-Each screen renders at exact panel dimensions per device:
+Each screen renders at exact panel dimensions, with a layout designed per
+device rather than one design scaled:
 
 | Route      | OG TRMNL (800×480, 1-bit) | TRMNL X (1872×1404, 16-grey) |
 | ---------- | ------------------------- | ---------------------------- |
 | Demo       | `/screens/og/demo`        | `/screens/x/demo`            |
 | NEM energy | `/screens/og/energy`      | `/screens/x/energy`          |
+| Weather    | `/screens/og/weather`     | `/screens/x/weather`         |
 | Dashboard  | `/screens/og/dashboard`   | `/screens/x/dashboard`       |
 
-`/` is a human-facing index. Screens are registered in `src/lib/screens.ts`;
-`ScreenFrame` pins the pixel dimensions (the X designs at half size under
-`zoom: 2` so rem-based tokens keep their physical size).
+`/` is a human-facing index. Screens are registered in `src/lib/screens.ts`.
+
+## Rendering
+
+**Charts are SSR SVG.** `src/lib/components/charts/` holds `StackedArea`,
+`Sparkline` and `Columns`, which compute their geometry with `d3-shape` /
+`d3-scale` at an explicit width and height. Panels are fixed, known sizes, so
+nothing needs to measure the DOM. This replaced a LayerCake chart that
+defaulted to `ssr = false` and sized itself from `bind:clientWidth` — it left
+an empty div in the server HTML, which is why the graph screenshotted blank.
+
+**Fills are patterns, not greys** (`charts/patterns.ts`). A grey ramp dithers
+into noise on the 1-bit OG and quantises unpredictably on the X; hard
+black-and-white hatching reads the same on both. `StackedArea` defines every
+pattern, not just the ones its series use, so a legend elsewhere on the screen
+can paint a matching swatch.
+
+**Type is TRMNL's bitmap faces**, self-hosted in `static/fonts/`
+(`src/lib/fonts.css`). No antialiasing means no grey edge pixels to dither.
+They are drawn at exactly 12/16/21px and stay crisp only at integer multiples,
+which is what `--scale` in `src/lib/screen.css` enforces — it is an integer per
+device (OG 1×, X 2×) and every `--t-*` token is a multiple of a native size.
+
+**`--scale` multiplies type and rules only, never the layout.** That leaves the
+X with 936×702 design units against the OG's 800×480 — 17% wider but 46%
+taller — so screens branch on `data.device` to use the extra room (the X
+weather screen adds sunrise/sunset cells and a four-day outlook). The old
+`zoom: 2` approach forced both panels to share one design.
 
 ## Theming
 
-- `src/lib/themes/brutalist.css` re-skins the full stratum-ui token API via
-  `data-theme="brutalist"`: ink on paper, zero radii, solid offset shadows,
-  mono display type. Greys are 4-bit-exact (`#111`…`#eee`) so the X's 16-level
-  panel renders them without quantisation.
-- `src/lib/eink.css` holds per-panel arms (`data-eink="mono" | "grey16"`) —
-  the OG forces pure black/white text; the X keeps the grey ramp.
+`src/lib/screen.css` is the screen design language: pure `#000` on `#fff`,
+heavy rules, axis-free chart panels with their range stated in type beside
+them. Build screens from its `--t-*` / `--sp-*` tokens; never hard-code a px
+type size. There is no per-panel colour arm because there are no greys to
+remap.
+
+`src/lib/themes/brutalist.css` re-skins the stratum-ui `--su-*` tokens, which
+now only dress the human-facing index page.
 
 ## Develop
 
@@ -67,15 +96,31 @@ The custom domain is attached in the Cloudflare dashboard, not in
 
 TRMNL side, per device: add the Screenshot plugin →
 `https://trmnl.chienleng.com/screens/<device>/<screen>` with header
-`Authorization: Bearer <token>`, enable "Always refresh" (charts render
-client-side), refresh 15 min.
+`Authorization: Bearer <token>`, refresh 15 min. Use the `og` screens on an OG
+TRMNL and `x` on a TRMNL X so the layout matches the panel.
 
-## Private plugins
+To check a screen at true size locally, screenshot the built worker with JS
+off — this is what proves the capture never depends on hydration:
 
-Charts can't survive the Screenshot plugin — they render client-side, and the
-capture fires before hydration. These screens are
-[private plugins](https://help.trmnl.com/en/articles/9510536-private-plugins)
-instead: TRMNL polls a JSON endpoint here and renders the chart itself with
+```bash
+pnpm build && pnpm preview
+docker run --rm -v "$PWD/shots:/shots" zenika/alpine-chrome \
+  --no-sandbox --hide-scrollbars --disable-javascript \
+  --screenshot=/shots/og-energy.png --window-size=800,480 \
+  "http://host.docker.internal:4173/screens/og/energy?token=<token>"
+```
+
+## Private plugins (superseded)
+
+> Kept for reference, not in use. These were the answer to the blank-chart
+> problem before the screens rendered charts server-side; the Screenshot
+> plugin now handles every screen, with far more layout freedom than Liquid
+> templates allowed. Delete `trmnl/` and `src/routes/api/` if you want them
+> gone — `src/lib/server/{energy,weather}.ts` is shared with the screens and
+> must stay.
+
+[Private plugins](https://help.trmnl.com/en/articles/9510536-private-plugins)
+have TRMNL poll a JSON endpoint here and render the chart itself with
 framework-hosted Highcharts + the `TRMNLCharts` dither helper.
 
 | Plugin            | Endpoint       | Data                                           | Preview port |

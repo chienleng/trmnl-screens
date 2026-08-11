@@ -1,0 +1,138 @@
+/* ==========================================================================
+   Screen design language — brutalist structure, Tufte data presentation.
+
+   Everything is pure #000 on #fff. No greys: on the 1-bit OG they dither into
+   noise that reads as mush at viewing distance, and on the 16-level X they
+   quantise to whatever step is nearest, which is unpredictable. Charts carry
+   no axes or gridlines — the numbers they would encode are stated in type
+   beside them instead.
+
+   Every size below is `calc(<n>px * var(--scale))` where n is a native bitmap
+   size (12/16/21) or an exact multiple. --scale is an integer per device, so
+   every rendered size stays on the bitmap grid. Never hard-code a px type size
+   in a screen; reach for these tokens.
+   ========================================================================== */
+
+.frame {
+	/* Type — the number is the OG pixel size. */
+	--t-12: calc(12px * var(--scale));
+	--t-16: calc(16px * var(--scale));
+	--t-21: calc(21px * var(--scale));
+	--t-32: calc(32px * var(--scale)); /* TRMNL16 × 2 */
+	--t-42: calc(42px * var(--scale)); /* TRMNL21 × 2 */
+	--t-63: calc(63px * var(--scale)); /* TRMNL21 × 3 */
+	--t-84: calc(84px * var(--scale)); /* TRMNL21 × 4 */
+	--t-105: calc(105px * var(--scale)); /* TRMNL21 × 5 */
+
+	/* Space and rules */
+	--sp-1: calc(2px * var(--scale));
+	--sp-2: calc(4px * var(--scale));
+	--sp-3: calc(8px * var(--scale));
+	--sp-4: calc(12px * var(--scale));
+	--sp-5: calc(16px * var(--scale));
+	--sp-6: calc(24px * var(--scale));
+	--rule-hair: calc(1px * var(--scale));
+	--rule-thin: calc(2px * var(--scale));
+	--rule-mid: calc(3px * var(--scale));
+	--rule-thick: calc(5px * var(--scale));
+
+	font-family: 'TRMNL12', 'Courier New', monospace;
+	font-weight: bold;
+	font-size: var(--t-12);
+	line-height: 1.2;
+	color: #000;
+	background: #fff;
+	/* Bitmap glyphs must not be smoothed — grey edge pixels are exactly what
+	   this whole approach exists to avoid. */
+	-webkit-font-smoothing: none;
+	font-smooth: never;
+}
+
+/* --- Primitives ---------------------------------------------------------- */
+
+/* Small uppercase caption: the label half of every metric. */
+.label {
+	font-family: 'TRMNL12', monospace;
+	font-size: var(--t-12);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+}
+
+/* Metric values, in ascending emphasis. */
+.value {
+	font-family: 'TRMNL16', monospace;
+	font-size: var(--t-32);
+	line-height: 1.1;
+}
+.value--lg {
+	font-family: 'TRMNL21', monospace;
+	font-size: var(--t-42);
+	line-height: 1;
+}
+.value--xl {
+	font-family: 'TRMNL21', monospace;
+	font-size: var(--t-63);
+	line-height: 0.95;
+}
+.value--hero {
+	font-family: 'TRMNL21', monospace;
+	font-size: var(--t-84);
+	line-height: 0.95;
+}
+.value--unit {
+	font-family: 'TRMNL12', monospace;
+	font-size: var(--t-12);
+}
+
+/* Uppercase running text a step up from .label. */
+.title {
+	font-family: 'TRMNL16', monospace;
+	font-size: var(--t-16);
+	text-transform: uppercase;
+}
+.title--lg {
+	font-family: 'TRMNL16', monospace;
+	font-size: var(--t-32);
+	text-transform: uppercase;
+}
+
+/* Structure: heavy rules instead of boxes. */
+.rule {
+	border-bottom: var(--rule-thick) solid #000;
+}
+.rule--mid {
+	border-bottom: var(--rule-mid) solid #000;
+}
+.rule--thin {
+	border-bottom: var(--rule-thin) solid #000;
+}
+
+/* Screen header: place name left, date right, over a heavy rule. */
+.screen-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+
+/* A strap above a chart naming it and stating its range — this is what makes
+   the axis-free panels readable. */
+.panel-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	border-bottom: var(--rule-thin) solid #000;
+	padding-bottom: var(--sp-1);
+	margin-bottom: var(--sp-2);
+}
+
+/* Metric row divided by vertical rules. */
+.metrics {
+	display: grid;
+	gap: 0;
+	border-top: var(--rule-mid) solid #000;
+	padding-top: var(--sp-2);
+}
+.metrics > * + * {
+	border-left: var(--rule-thin) solid #000;
+	padding-left: var(--sp-4);
+}

@@ -1,131 +1,127 @@
 <script lang="ts">
-	import { ChartStore, StackedAreaChart } from '@chienleng/stratum-ui/charts';
-	import { StatTile } from '@chienleng/stratum-ui/ui';
-	import ScreenHeader from '$lib/components/ScreenHeader.svelte';
-	import { FUELTECH_GROUPS } from '$lib/energy';
-	import { NEM_TIMEZONE } from '$lib/time';
+	import StackedArea from '$lib/components/charts/StackedArea.svelte';
+	import { patternFor } from '$lib/components/charts/patterns';
+	import { devices } from '$lib/screens';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const hourFormat = new Intl.DateTimeFormat('en-AU', {
-		hour: 'numeric',
-		hourCycle: 'h23',
-		timeZone: NEM_TIMEZONE
-	});
-	const metaFormat = new Intl.DateTimeFormat('en-AU', {
-		weekday: 'short',
-		day: 'numeric',
-		month: 'short',
-		hour: 'numeric',
-		minute: '2-digit',
-		timeZone: NEM_TIMEZONE
-	});
+	const spec = $derived(devices[data.device]);
+	const scale = $derived(spec.scale);
+	const isX = $derived(data.device === 'x');
 
-	const present = $derived(
-		FUELTECH_GROUPS.filter((group) => data.rows.some((row) => group.id in row))
-	);
-
-	const peakGw = $derived(
-		data.rows.reduce((peak, row) => {
-			const total = present.reduce((sum, group) => sum + (row[group.id] ?? 0), 0);
-			return Math.max(peak, total);
-		}, 0)
-	);
-
-	const chart = $derived.by(() => {
-		const store = new ChartStore({
-			key: Symbol('nem-power'),
-			title: 'NEM generation',
-			prefix: 'M',
-			displayPrefix: 'G',
-			allowedPrefixes: ['M', 'G'],
-			baseUnit: 'W',
-			chartType: 'stacked-area',
-			timeZone: NEM_TIMEZONE,
-			chartStyles: { chartHeightPx: data.device === 'x' ? 400 : 232 }
-		});
-		store.seriesData = data.rows.map((row) => ({ ...row, date: new Date(row.time) }));
-		store.seriesNames = present.map((group) => group.id);
-		store.seriesColours = Object.fromEntries(present.map((group) => [group.id, group.colour]));
-		store.seriesLabels = Object.fromEntries(present.map((group) => [group.id, group.label]));
-		store.formatTickX = (d) => (d instanceof Date ? hourFormat.format(d) : String(d));
-		if (data.rows.length > 0) {
-			store.xDomain = [data.rows[0].time, data.rows[data.rows.length - 1].time];
-		}
-		return store;
-	});
+	const contentWidth = $derived(spec.width - 16 * scale);
+	const chartHeight = $derived((isX ? 430 : 265) * scale);
 </script>
 
-<ScreenHeader
-	title="NEM Power"
-	meta={data.latestTime ? metaFormat.format(new Date(data.latestTime)) : ''}
-/>
+{#if data.energy}
+	{@const e = data.energy}
+	<div class="screen-head label">
+		<span>NEM generation</span>
+		<span>{e.observedAt}</span>
+	</div>
+	<div class="rule"></div>
 
-{#if data.configError}
-	<p class="error">{data.configError}</p>
-{:else}
-	<!-- Not StatGrid: its viewport breakpoints collapse to 2 columns at 800px,
-	     but a screen frame is fixed-size — the column count must be too. -->
-	<div class="stats">
-		<StatTile label="Renewables" value="{Math.round(data.renewablePct ?? 0)}%" />
-		<StatTile label="Generation" value="{((data.totalMw ?? 0) / 1000).toFixed(1)} GW" />
-		<StatTile label="24h peak" value="{(peakGw / 1000).toFixed(1)} GW" />
+	<div class="metrics">
+		<div>
+			<div class="label">Renewables</div>
+			<div class="value--xl">{e.renewablePct}%</div>
+		</div>
+		<div>
+			<div class="label">Generating</div>
+			<div class="value--xl">{e.totalGw}<span class="value--unit">GW</span></div>
+		</div>
+		<div>
+			<div class="label">24 h peak</div>
+			<div class="value--xl">{e.peakGw}<span class="value--unit">GW</span></div>
+		</div>
 	</div>
 
-	<div class="chart">
-		<StackedAreaChart {chart} />
+	<div class="panel">
+		<div class="panel-head label">
+			<span>Generation by fuel &mdash; last 24 h</span>
+			<span>0 to {e.peakGw} GW</span>
+		</div>
+		<StackedArea
+			series={e.series}
+			width={contentWidth}
+			height={chartHeight}
+			{scale}
+			idPrefix="nem"
+		/>
+		<div class="scale label">
+			{#each e.hourTicks as tick, i (i)}
+				<span>{tick}</span>
+			{/each}
+		</div>
 	</div>
 
-	<ul class="legend">
-		{#each present as group (group.id)}
-			<li>
-				<span class="swatch" style:background={group.colour}></span>
-				{group.label}
-			</li>
+	<!-- Direct-labelled key: the bands carry patterns rather than a colour ramp,
+	     so the swatch has to show the same pattern to be any use. -->
+	<div class="key" class:key--wrap={!isX}>
+		{#each e.series as s, i (s.key)}
+			{@const p = patternFor(i)}
+			<div class="key-item">
+				<svg class="swatch" width={14 * scale} height={14 * scale} aria-hidden="true">
+					<rect
+						width={14 * scale}
+						height={14 * scale}
+						fill="url(#nem-{p.id})"
+						stroke="#000"
+						stroke-width={scale}
+					/>
+				</svg>
+				<span class="label">{s.label}</span>
+			</div>
 		{/each}
-	</ul>
+	</div>
+{:else}
+	<div class="screen-head label"><span>NEM generation</span><span>Unavailable</span></div>
+	<div class="rule"></div>
+	<div class="title--lg err">No data</div>
+	<div class="label">{data.error}</div>
 {/if}
 
 <style>
-	.stats {
-		display: grid;
+	.metrics {
 		grid-template-columns: repeat(3, 1fr);
-		gap: var(--su-space-4);
+		margin-top: var(--sp-3);
 	}
 
-	.error {
-		flex: 1;
-		display: grid;
-		place-content: center;
-		font-family: var(--su-font-mono);
+	.panel {
+		margin-top: var(--sp-4);
 	}
 
-	.chart {
-		width: 100%;
-		margin-top: var(--su-space-4);
-	}
-
-	.legend {
+	.scale {
 		display: flex;
-		flex-wrap: wrap;
-		gap: var(--su-space-1) var(--su-space-4);
-		margin: var(--su-space-2) 0 0;
-		padding: 0;
-		list-style: none;
-		font-family: var(--su-font-mono);
-		font-size: var(--su-font-size-xs);
+		justify-content: space-between;
+		margin-top: var(--sp-1);
 	}
 
-	.legend li {
-		display: inline-flex;
+	.key {
+		display: flex;
+		gap: var(--sp-2) var(--sp-5);
+		margin-top: var(--sp-4);
+		border-top: var(--rule-thin) solid #000;
+		padding-top: var(--sp-2);
+	}
+
+	.key--wrap {
+		flex-wrap: wrap;
+	}
+
+	.key-item {
+		display: flex;
 		align-items: center;
-		gap: var(--su-space-1);
+		gap: var(--sp-2);
 	}
 
 	.swatch {
-		width: 0.75em;
-		height: 0.75em;
-		border: 1px solid var(--su-border);
+		display: block;
+		flex-shrink: 0;
+	}
+
+	.err {
+		margin-top: var(--sp-6);
 	}
 </style>

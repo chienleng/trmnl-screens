@@ -24,6 +24,8 @@
 		"@sveltejs/adapter-cloudflare": "^7.2.9",
 		"@sveltejs/kit": "^2.70.1",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"@types/d3-scale": "^4.0.9",
+		"@types/d3-shape": "^3.1.8",
 		"@types/node": "^22.20.1",
 		"eslint": "^10.7.0",
 		"eslint-config-prettier": "^10.1.8",
@@ -40,6 +42,8 @@
 	},
 	"dependencies": {
 		"@chienleng/stratum-ui": "^0.11.0",
+		"d3-scale": "^4.0.2",
+		"d3-shape": "^3.2.0",
 		"openelectricity": "^0.9.1"
 	}
 }

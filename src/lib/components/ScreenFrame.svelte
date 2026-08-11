@@ -5,18 +5,20 @@
 	let { device, children }: { device: DeviceSlug; children: Snippet } = $props();
 
 	const spec = $derived(devices[device]);
-	// The X is 1872×1404 at 227 PPI — roughly double the OG's pixel density.
-	// Designing at half size and letting `zoom` double everything keeps rem-based
-	// stratum-ui tokens at a comfortable physical size on both panels.
-	const zoom = $derived(device === 'x' ? 2 : 1);
 </script>
 
+<!--
+	Exact panel pixels, no `zoom`. The previous version designed the X at half
+	size and doubled it, which forced both panels to share one layout; here
+	`--scale` multiplies type and rules only, so the X's extra room is real
+	space a screen can lay out into differently.
+-->
 <div
 	class="frame"
 	data-eink={spec.eink}
-	style:width="{spec.width / zoom}px"
-	style:height="{spec.height / zoom}px"
-	style:zoom
+	style:width="{spec.width}px"
+	style:height="{spec.height}px"
+	style:--scale={spec.scale}
 >
 	{@render children()}
 </div>
@@ -26,8 +28,6 @@
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		padding: var(--su-space-5);
-		color: var(--su-text);
-		background: var(--su-surface);
+		padding: var(--sp-3);
 	}
 </style>

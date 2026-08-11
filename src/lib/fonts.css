@@ -1,0 +1,56 @@
+/* ==========================================================================
+   TRMNL bitmap faces, self-hosted from static/fonts/.
+
+   Served from our own origin on purpose: TRMNL's copies at trmnl.com/fonts/
+   are CORS-open, but the Screenshot plugin captures on a timer and a
+   cross-origin font fetch is one more thing that can be slow when it does.
+   Same-origin means they are already in the HTML response's critical path.
+
+   These are bitmap fonts drawn at an exact pixel size — 12, 16 and 21. They
+   stay crisp only at that size or an exact integer multiple of it; anything
+   in between interpolates and the stems go uneven. `--type-scale` in
+   screens.ts is what keeps every size on-grid across both panels.
+
+   Why bitmap at all: no antialiasing means no grey edge pixels, so nothing
+   dithers into noise on the 1-bit OG and nothing quantises to a stray grey
+   on the 16-level X.
+   ========================================================================== */
+
+@font-face {
+	font-family: 'TRMNL12';
+	src: url('/fonts/TRMNL12-Regular.woff2') format('woff2');
+	font-weight: normal;
+	font-display: block;
+}
+@font-face {
+	font-family: 'TRMNL12';
+	src: url('/fonts/TRMNL12-Bold.woff2') format('woff2');
+	font-weight: bold;
+	font-display: block;
+}
+
+@font-face {
+	font-family: 'TRMNL16';
+	src: url('/fonts/TRMNL16-Regular.woff2') format('woff2');
+	font-weight: normal;
+	font-display: block;
+}
+@font-face {
+	font-family: 'TRMNL16';
+	src: url('/fonts/TRMNL16-Bold.woff2') format('woff2');
+	font-weight: bold;
+	font-display: block;
+}
+
+@font-face {
+	font-family: 'TRMNL21';
+	src: url('/fonts/TRMNL21-Regular.woff2') format('woff2');
+	font-weight: normal;
+	font-display: block;
+}
+@font-face {
+	font-family: 'TRMNL21';
+	src: url('/fonts/TRMNL21-Bold.woff2') format('woff2');
+	font-weight: bold;
+	font-display: block;
+}
