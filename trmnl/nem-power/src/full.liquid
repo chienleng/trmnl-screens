@@ -96,7 +96,10 @@
           // White hairline between bands so the stacked series stay
           // distinguishable once dithered on 1-bit panels.
           area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 1, lineColor: '#ffffff' },
-          series: { animation: false, pointStart: POINT_START, pointInterval: POINT_INTERVAL }
+          // enableMouseTracking off suppresses Highcharts' tracker paths —
+          // fat rgba(192,192,192,0.0001) strokes that are invisible on screen
+          // and on 1-bit, but quantise up to a visible grey on the 16-grey X.
+          series: { enableMouseTracking: false, animation: false, pointStart: POINT_START, pointInterval: POINT_INTERVAL }
         },
         series: SERIES.map(function (s, i) {
           return Object.assign(

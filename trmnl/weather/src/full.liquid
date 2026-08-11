@@ -164,7 +164,12 @@
           time: { useUTC: true }, // point_start is local wall-clock shifted to UTC
           xAxis: { type: 'datetime', visible: false, min: POINT_START, max: POINT_START + 23 * HOUR },
           yAxis: { visible: false, gridLineWidth: 0, endOnTick: false, startOnTick: false },
-          plotOptions: { series: { animation: false, pointStart: POINT_START, pointInterval: POINT_INTERVAL } }
+          // enableMouseTracking off is not about interactivity — it stops
+          // Highcharts emitting its .highcharts-tracker-line, a fat
+          // rgba(192,192,192,0.0001) path tracing the series. That is invisible
+          // on screen and dithers away on 1-bit, but the X's 16-grey quantiser
+          // rounds it up to the lightest grey step and it shows as smudges.
+          plotOptions: { series: { enableMouseTracking: false, animation: false, pointStart: POINT_START, pointInterval: POINT_INTERVAL } }
         };
       }
 
