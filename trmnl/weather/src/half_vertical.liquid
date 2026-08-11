@@ -1,17 +1,21 @@
 <style>
+  /* Bitmap faces at their native pixel sizes or exact multiples — see
+     full.liquid for why. */
   .wxv, .wxv * {
     color: #000;
-    font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-variant-numeric: tabular-nums;
+    font-family: 'TRMNL12', 'Courier New', monospace;
+    font-weight: bold;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
   }
   .wxv { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-  .wxv-head { font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
-  .wxv-rule { border-bottom: 4px solid #000; margin-top: 3px; }
-  .wxv-temp { font-size: 76px; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; margin-top: 10px; }
-  .wxv-cond { font-size: 19px; font-weight: 800; text-transform: uppercase; margin-top: 6px; }
-  .wxv-cell { border-top: 2px solid #000; margin-top: 10px; padding-top: 5px; }
-  .wxv-label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
-  .wxv-value { font-size: 30px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
+  .wxv-head { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; }
+  .wxv-rule { border-bottom: 4px solid #000; margin-top: 4px; }
+  .wxv-temp { font-family: 'TRMNL21', monospace; font-size: 63px; line-height: 0.95; margin-top: 12px; }
+  .wxv-cond { font-family: 'TRMNL16', monospace; font-size: 16px; text-transform: uppercase; margin-top: 6px; }
+  .wxv-cell { border-top: 2px solid #000; margin-top: 12px; padding-top: 6px; }
+  .wxv-label { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+  .wxv-value { font-family: 'TRMNL16', monospace; font-size: 32px; line-height: 1.1; }
 </style>
 
 <div class="wxv">

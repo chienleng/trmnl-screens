@@ -8,49 +8,57 @@
      dither into noise on a 1-bit panel and fall apart at viewing distance.
      Tufte: the charts carry no axes or gridlines; every number they'd encode
      is stated directly in the strap above them. */
-  /* Grotesque sans at heavy weights, never the document's default serif: a
-     high-contrast serif's thin strokes break up under 1-bit dithering and
-     vanish at viewing distance. */
+  /* TRMNL's bundled bitmap faces. They carry no antialiasing, so nothing
+     grey-fringes into dither noise — the crispest option on a 1-bit panel.
+     Each is drawn for a native pixel size (12/16/21), so every font-size below
+     is that native size or an exact integer multiple of it; off-multiple sizes
+     interpolate and the stems go uneven. */
   .wx, .wx * {
     color: #000;
-    font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-variant-numeric: tabular-nums;
+    font-family: 'TRMNL12', 'Courier New', monospace;
+    font-weight: bold;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
   }
   .wx { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 
   .wx-head {
     display: flex; justify-content: space-between; align-items: baseline;
-    font-size: 14px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
   }
-  .wx-head-rule { border-bottom: 5px solid #000; margin-top: 4px; }
+  .wx-head-rule { border-bottom: 5px solid #000; margin-top: 5px; }
 
-  .wx-now { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 6px; }
-  .wx-temp { font-size: 100px; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; }
-  .wx-cond { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; text-transform: uppercase; margin-top: 8px; }
+  .wx-now { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 8px; }
+  /* 21 × 4 */
+  .wx-temp { font-family: 'TRMNL21', monospace; font-size: 84px; line-height: 0.95; }
+  /* 16 × 2 */
+  .wx-cond { font-family: 'TRMNL16', monospace; font-size: 32px; line-height: 1; text-transform: uppercase; margin-top: 6px; }
   .wx-rain-block { text-align: right; }
-  .wx-rain-val { font-size: 72px; font-weight: 800; line-height: 0.8; letter-spacing: -0.04em; }
-  .wx-caption { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin-top: 6px; }
+  /* 21 × 3 */
+  .wx-rain-val { font-family: 'TRMNL21', monospace; font-size: 63px; line-height: 0.95; }
+  .wx-caption { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; margin-top: 8px; }
 
-  .wx-strip { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 3px solid #000; margin-top: 10px; padding-top: 6px; }
+  .wx-strip { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 3px solid #000; margin-top: 10px; padding-top: 7px; }
   .wx-cell { border-left: 2px solid #000; padding-left: 12px; }
   .wx-cell:first-child { border-left: 0; padding-left: 0; }
-  .wx-cell-label { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }
-  .wx-cell-value { font-size: 32px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
-  .wx-cell-unit { font-size: 16px; font-weight: 700; }
+  .wx-cell-label { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; }
+  /* 16 × 2 */
+  .wx-cell-value { font-family: 'TRMNL16', monospace; font-size: 32px; line-height: 1.1; }
+  .wx-cell-unit { font-family: 'TRMNL12', monospace; font-size: 12px; }
 
   .wx-panel { margin-top: 8px; }
   .wx-panel-head {
     display: flex; justify-content: space-between; align-items: baseline;
-    border-bottom: 2px solid #000; padding-bottom: 2px;
-    font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    border-bottom: 2px solid #000; padding-bottom: 3px;
+    font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
   }
-  .wx-panel-note { letter-spacing: 0.1em; }
+  .wx-panel-note { letter-spacing: 0.08em; }
 
   /* One time scale serving both panels — they share an x domain, so a second
      axis would be redundant ink. */
   .wx-scale {
-    display: flex; justify-content: space-between; margin-top: 2px;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    display: flex; justify-content: space-between; margin-top: 3px;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
   }
 </style>
 
