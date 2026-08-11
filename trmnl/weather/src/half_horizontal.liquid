@@ -1,14 +1,41 @@
-<div class="layout layout--col layout--center">
+<style>
+  .wxh, .wxh * {
+    color: #000;
+    font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  .wxh { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+  .wxh-head { font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
+  .wxh-rule { border-bottom: 4px solid #000; margin-top: 3px; }
+  .wxh-row { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 8px; }
+  .wxh-temp { font-size: 64px; font-weight: 800; line-height: 0.8; letter-spacing: -0.04em; }
+  .wxh-cond { font-size: 17px; font-weight: 800; text-transform: uppercase; margin-top: 6px; }
+  .wxh-rain { font-size: 44px; font-weight: 800; line-height: 0.8; letter-spacing: -0.03em; text-align: right; }
+  .wxh-label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 5px; text-align: right; }
+</style>
+
+<div class="wxh">
   {% if ok %}
-    <span class="value value--xlarge value--tnums">{{ temp }}&deg;</span>
-    <span class="label">{{ conditions }} &middot; feels {{ feels_like }}&deg; &middot; rain to {{ rain_peak }}%</span>
+    <div class="wxh-head">{{ location }}</div>
+    <div class="wxh-rule"></div>
+    <div class="wxh-row">
+      <div>
+        <div class="wxh-temp">{{ temp }}&deg;</div>
+        <div class="wxh-cond">{{ conditions }}</div>
+      </div>
+      <div>
+        <div class="wxh-rain">{{ rain_peak }}%</div>
+        <div class="wxh-label">Peak rain</div>
+      </div>
+    </div>
   {% else %}
-    <span class="value">No data</span>
-    <span class="label">{{ error }}</span>
+    <div class="wxh-head">{{ location }}</div>
+    <div class="wxh-rule"></div>
+    <div class="wxh-cond">No data</div>
   {% endif %}
 </div>
 
 <div class="title_bar">
-  <span class="title">{{ location }} Weather</span>
+  <span class="title">Weather</span>
   <span class="instance">{{ observed_at }}</span>
 </div>

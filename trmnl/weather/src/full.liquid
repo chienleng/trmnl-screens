@@ -1,42 +1,128 @@
-{% assign chart_id = 'weather-chart-' | append_random %}
+{% assign temp_id = 'wx-temp-' | append_random %}
+{% assign rain_id = 'wx-rain-' | append_random %}
 
 <script src="https://trmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
 
-<div class="layout layout--col layout--top layout--left gap--small">
+<style>
+  /* Brutalist: pure black on white, heavy rules, no radii, no greys — greys
+     dither into noise on a 1-bit panel and fall apart at viewing distance.
+     Tufte: the charts carry no axes or gridlines; every number they'd encode
+     is stated directly in the strap above them. */
+  /* Grotesque sans at heavy weights, never the document's default serif: a
+     high-contrast serif's thin strokes break up under 1-bit dithering and
+     vanish at viewing distance. */
+  .wx, .wx * {
+    color: #000;
+    font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  .wx { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+
+  .wx-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .wx-head-rule { border-bottom: 5px solid #000; margin-top: 4px; }
+
+  .wx-now { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 6px; }
+  .wx-temp { font-size: 100px; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; }
+  .wx-cond { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; text-transform: uppercase; margin-top: 8px; }
+  .wx-rain-block { text-align: right; }
+  .wx-rain-val { font-size: 72px; font-weight: 800; line-height: 0.8; letter-spacing: -0.04em; }
+  .wx-caption { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin-top: 6px; }
+
+  .wx-strip { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 3px solid #000; margin-top: 10px; padding-top: 6px; }
+  .wx-cell { border-left: 2px solid #000; padding-left: 12px; }
+  .wx-cell:first-child { border-left: 0; padding-left: 0; }
+  .wx-cell-label { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; }
+  .wx-cell-value { font-size: 32px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
+  .wx-cell-unit { font-size: 16px; font-weight: 700; }
+
+  .wx-panel { margin-top: 8px; }
+  .wx-panel-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 2px solid #000; padding-bottom: 2px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .wx-panel-note { letter-spacing: 0.1em; }
+
+  /* One time scale serving both panels — they share an x domain, so a second
+     axis would be redundant ink. */
+  .wx-scale {
+    display: flex; justify-content: space-between; margin-top: 2px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+</style>
+
+<div class="wx">
   {% if ok %}
-    <div class="flex flex--row flex--between flex--bottom w--full">
-      <div class="flex flex--row flex--bottom gap--small">
-        <span class="value value--xxlarge value--tnums">{{ temp }}&deg;</span>
-        <span class="title mb--1">{{ conditions }}</span>
+    <div class="wx-head">
+      <span>{{ location }}</span>
+      <span>{{ date_label }}</span>
+    </div>
+    <div class="wx-head-rule"></div>
+
+    <div class="wx-now">
+      <div>
+        <div class="wx-temp">{{ temp }}&deg;</div>
+        <div class="wx-cond">{{ conditions }}</div>
       </div>
-      <div class="text--right">
-        <span class="label">UV {{ uv_max }} &middot; &uarr; {{ sunrise }} &darr; {{ sunset }}</span>
+      <div class="wx-rain-block">
+        <div class="wx-rain-val">{{ rain_peak }}%</div>
+        <div class="wx-caption">
+          {% if rain_peak_at != '' %}Peak rain {{ rain_peak_at }}{% else %}No rain due{% endif %}
+        </div>
       </div>
     </div>
 
-    <span class="description w--full text--left">
-      Feels {{ feels_like }}&deg; &middot; {{ wind }} &middot; humidity {{ humidity }}%
-    </span>
+    <div class="wx-strip">
+      <div class="wx-cell">
+        <div class="wx-cell-label">Feels</div>
+        <div class="wx-cell-value">{{ feels_like }}&deg;</div>
+      </div>
+      <div class="wx-cell">
+        <div class="wx-cell-label">Wind</div>
+        <div class="wx-cell-value">{{ wind }}<span class="wx-cell-unit">km/h</span></div>
+      </div>
+      <div class="wx-cell">
+        <div class="wx-cell-label">Humidity</div>
+        <div class="wx-cell-value">{{ humidity }}%</div>
+      </div>
+      <div class="wx-cell">
+        <div class="wx-cell-label">UV / Daylight</div>
+        <div class="wx-cell-value">{{ uv_max }}<span class="wx-cell-unit">&nbsp;{{ sunrise }}&ndash;{{ sunset }}</span></div>
+      </div>
+    </div>
 
-    <div id="{{ chart_id }}" class="w--full"></div>
+    <div class="wx-panel">
+      <div class="wx-panel-head">
+        <span>Temperature &mdash; next 24 h</span>
+        <span class="wx-panel-note">{{ temp_min }}&deg; to {{ temp_max }}&deg;</span>
+      </div>
+      <div id="{{ temp_id }}"></div>
+    </div>
 
-    <div class="flex flex--row flex--between w--full">
-      <span class="label label--small">Next 24 hours</span>
-      <span class="label label--small">Rain peaks at {{ rain_peak }}%</span>
+    <div class="wx-panel">
+      <div class="wx-panel-head">
+        <span>Chance of rain &mdash; next 24 h</span>
+        <span class="wx-panel-note">0&ndash;100%</span>
+      </div>
+      <div id="{{ rain_id }}"></div>
+      <div class="wx-scale">
+        <span>Now</span><span>+6 h</span><span>+12 h</span><span>+18 h</span><span>+24 h</span>
+      </div>
     </div>
   {% else %}
-    <div class="item">
-      <div class="content">
-        <span class="value">No data</span>
-        <span class="label">{{ error }}</span>
-      </div>
-    </div>
+    <div class="wx-head"><span>{{ location }}</span><span>Unavailable</span></div>
+    <div class="wx-head-rule"></div>
+    <div class="wx-cond" style="margin-top: 40px;">No data</div>
+    <div class="wx-caption">{{ error }}</div>
   {% endif %}
 </div>
 
 <div class="title_bar">
-  <span class="title">{{ location }} Weather</span>
-  <span class="instance">Now {{ observed_at }} &middot; Open-Meteo</span>
+  <span class="title">Weather</span>
+  <span class="instance">{{ observed_at }} &middot; Open-Meteo</span>
 </div>
 
 {% if ok %}
@@ -48,69 +134,53 @@
     var POINT_INTERVAL = {{ point_interval }};
     var HOUR = 3600 * 1000;
 
-    // TRMNL's screenshot service captures shortly after load — poll until the
-    // framework (TRMNLCharts) and Highcharts are both ready, ~10s ceiling.
     function whenReady(fn, tries) {
-      if (window.Highcharts && window.TRMNLCharts) return fn();
+      if (window.Highcharts) return fn();
       if ((tries || 0) > 100) return;
       setTimeout(function () { whenReady(fn, (tries || 0) + 1); }, 100);
     }
 
     whenReady(function () {
-      var el = document.getElementById('{{ chart_id }}');
-      var height = window.TRMNLPaint ? TRMNLPaint.px(235, { el: el }) : 235;
+      var px = function (v, el) { return window.TRMNLPaint ? TRMNLPaint.px(v, { el: el }) : v; };
 
-      var options = TRMNLCharts.merge(TRMNLCharts.options({ el: el }), {
-        chart: { animation: false, height: height },
-        title: { text: undefined },
-        credits: { enabled: false },
-        legend: { enabled: false },
-        time: { useUTC: true }, // point_start is local wall-clock shifted to UTC
-        xAxis: {
-          type: 'datetime',
-          tickInterval: 3 * HOUR,
-          labels: { format: '{value:%H}' }
-        },
-        yAxis: [
-          {
-            // Temperature, left. Whole degrees only, and five ticks so the
-            // gridlines line up with the rain axis opposite.
-            title: { text: undefined },
-            allowDecimals: false,
-            tickAmount: 5,
-            labels: { format: '{value}°' }
-          },
-          {
-            // Rain probability, right — pinned to 0-100 so bar heights read as
-            // percentages rather than rescaling with the day's maximum.
-            title: { text: undefined },
-            min: 0,
-            max: 100,
-            endOnTick: false,
-            tickPositions: [0, 25, 50, 75, 100],
-            opposite: true,
-            gridLineWidth: 0,
-            labels: { format: '{value}%' }
-          }
-        ],
-        plotOptions: {
-          series: { animation: false, pointStart: POINT_START, pointInterval: POINT_INTERVAL },
-          column: { borderWidth: 0, groupPadding: 0.05, pointPadding: 0 },
-          spline: { marker: { enabled: false }, lineWidth: 3 }
-        },
-        series: [
-          Object.assign(
-            { name: 'Rain', type: 'column', data: RAIN, yAxis: 1 },
-            TRMNLCharts.series(1, 2, { el: el })
-          ),
-          Object.assign(
-            { name: 'Temp', type: 'spline', data: TEMPS, yAxis: 0, zIndex: 2 },
-            TRMNLCharts.series(0, 2, { el: el })
-          )
-        ]
-      });
+      // Deliberately not TRMNLCharts.options(): each panel is a single black
+      // series, so the dither ramp buys nothing and solid black stays crisp at
+      // distance. Shared: no axes, no gridlines, no legend — pure data ink.
+      function base(el, height) {
+        return {
+          chart: { animation: false, height: px(height, el), backgroundColor: 'transparent', margin: [6, 0, 0, 0], style: { fontFamily: 'Inter, sans-serif' } },
+          title: { text: undefined },
+          credits: { enabled: false },
+          legend: { enabled: false },
+          tooltip: { enabled: false },
+          time: { useUTC: true }, // point_start is local wall-clock shifted to UTC
+          xAxis: { type: 'datetime', visible: false, min: POINT_START, max: POINT_START + 23 * HOUR },
+          yAxis: { visible: false, gridLineWidth: 0, endOnTick: false, startOnTick: false },
+          plotOptions: { series: { animation: false, pointStart: POINT_START, pointInterval: POINT_INTERVAL } }
+        };
+      }
 
-      Highcharts.chart(el, options);
+      var tempEl = document.getElementById('{{ temp_id }}');
+      var tempOpts = base(tempEl, 66);
+      // Fill the panel: the range is stated in the strap above, so vertical
+      // headroom here would just be dead ink.
+      tempOpts.yAxis = { visible: false, gridLineWidth: 0, endOnTick: false, startOnTick: false, minPadding: 0.06, maxPadding: 0.06 };
+      tempOpts.series = [{
+        type: 'spline', data: TEMPS, color: '#000000',
+        lineWidth: px(4, tempEl), marker: { enabled: false }
+      }];
+      Highcharts.chart(tempEl, tempOpts);
+
+      var rainEl = document.getElementById('{{ rain_id }}');
+      var rainOpts = base(rainEl, 56);
+      // Pinned 0-100 so bar heights read as absolute probability rather than
+      // rescaling to whatever the day's maximum happens to be.
+      rainOpts.yAxis = { visible: false, gridLineWidth: 0, min: 0, max: 100, endOnTick: false, startOnTick: false };
+      rainOpts.series = [{
+        type: 'column', data: RAIN, color: '#000000',
+        borderWidth: 0, groupPadding: 0, pointPadding: 0.08
+      }];
+      Highcharts.chart(rainEl, rainOpts);
     });
   })();
 </script>

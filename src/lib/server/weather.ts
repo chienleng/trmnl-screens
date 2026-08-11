@@ -43,6 +43,15 @@ function clockTime(naiveLocal: string): string {
 	return `${Number(hour)}:${minute}`;
 }
 
+// Formatted off the fake-UTC epoch, so the zone is already baked in and the
+// formatter must not shift it again.
+const DATE_LABEL = new Intl.DateTimeFormat('en-AU', {
+	weekday: 'short',
+	day: 'numeric',
+	month: 'short',
+	timeZone: 'UTC'
+});
+
 export async function fetchWeather(fetcher: typeof fetch = fetch): Promise<WeatherResult> {
 	const url = new URL('https://api.open-meteo.com/v1/forecast');
 	url.searchParams.set('latitude', String(LOCATION.latitude));
@@ -78,6 +87,7 @@ export type WeatherPayload = {
 	ok: true;
 	error: null;
 	location: string;
+	date_label: string;
 	temp: number;
 	conditions: string;
 	feels_like: number;
@@ -87,7 +97,11 @@ export type WeatherPayload = {
 	sunrise: string;
 	sunset: string;
 	observed_at: string;
+	/** Direct-labelling values, so the charts need no axes of their own. */
+	temp_min: number;
+	temp_max: number;
 	rain_peak: number;
+	rain_peak_at: string;
 	point_start: number;
 	point_interval: number;
 	temps: number[];
@@ -113,20 +127,27 @@ export function toPluginPayload(data: OpenMeteoResponse): WeatherPayload {
 	const temps = hourly.temperature_2m.slice(start, start + HOURS).map((t) => t ?? 0);
 	const rain = hourly.precipitation_probability.slice(start, start + HOURS).map((p) => p ?? 0);
 
+	const peakRain = rain.length > 0 ? Math.max(...rain) : 0;
+	const peakIndex = rain.indexOf(peakRain);
+
 	return {
 		ok: true,
 		error: null,
 		location: LOCATION.name,
+		date_label: DATE_LABEL.format(new Date(fakeUtcEpoch(current.time))),
 		temp: Math.round(current.temperature_2m),
 		conditions: weatherLabel(current.weather_code),
 		feels_like: Math.round(current.apparent_temperature),
-		wind: `${windDirection(current.wind_direction_10m)} ${Math.round(current.wind_speed_10m)} km/h`,
+		wind: `${windDirection(current.wind_direction_10m)} ${Math.round(current.wind_speed_10m)}`,
 		humidity: Math.round(current.relative_humidity_2m),
 		uv_max: Math.round(daily.uv_index_max[0] ?? 0),
 		sunrise: clockTime(daily.sunrise[0]),
 		sunset: clockTime(daily.sunset[0]),
 		observed_at: clockTime(current.time),
-		rain_peak: rain.length > 0 ? Math.max(...rain) : 0,
+		temp_min: Math.round(Math.min(...temps)),
+		temp_max: Math.round(Math.max(...temps)),
+		rain_peak: peakRain,
+		rain_peak_at: peakRain > 0 && peakIndex >= 0 ? clockTime(times[peakIndex]) : '',
 		point_start: fakeUtcEpoch(times[0]),
 		point_interval: 60 * 60 * 1000,
 		temps: temps.map((t) => Math.round(t * 10) / 10),

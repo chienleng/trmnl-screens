@@ -1,30 +1,41 @@
-<div class="layout layout--col layout--center gap--small">
+<style>
+  .wxv, .wxv * {
+    color: #000;
+    font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  .wxv { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+  .wxv-head { font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
+  .wxv-rule { border-bottom: 4px solid #000; margin-top: 3px; }
+  .wxv-temp { font-size: 76px; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; margin-top: 10px; }
+  .wxv-cond { font-size: 19px; font-weight: 800; text-transform: uppercase; margin-top: 6px; }
+  .wxv-cell { border-top: 2px solid #000; margin-top: 10px; padding-top: 5px; }
+  .wxv-label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+  .wxv-value { font-size: 30px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
+</style>
+
+<div class="wxv">
   {% if ok %}
-    <div class="item">
-      <div class="content">
-        <span class="value value--tnums">{{ temp }}&deg;</span>
-        <span class="label">{{ conditions }}</span>
-      </div>
+    <div class="wxv-head">{{ location }}</div>
+    <div class="wxv-rule"></div>
+    <div class="wxv-temp">{{ temp }}&deg;</div>
+    <div class="wxv-cond">{{ conditions }}</div>
+    <div class="wxv-cell">
+      <div class="wxv-label">Feels like</div>
+      <div class="wxv-value">{{ feels_like }}&deg;</div>
     </div>
-    <div class="item">
-      <div class="content">
-        <span class="value value--tnums">{{ feels_like }}&deg;</span>
-        <span class="label">Feels like</span>
-      </div>
-    </div>
-    <div class="item">
-      <div class="content">
-        <span class="value value--tnums">{{ rain_peak }}%</span>
-        <span class="label">Peak rain chance</span>
-      </div>
+    <div class="wxv-cell">
+      <div class="wxv-label">Peak rain</div>
+      <div class="wxv-value">{{ rain_peak }}%</div>
     </div>
   {% else %}
-    <span class="value">No data</span>
-    <span class="label">{{ error }}</span>
+    <div class="wxv-head">{{ location }}</div>
+    <div class="wxv-rule"></div>
+    <div class="wxv-cond">No data</div>
   {% endif %}
 </div>
 
 <div class="title_bar">
-  <span class="title">{{ location }} Weather</span>
+  <span class="title">Weather</span>
   <span class="instance">{{ observed_at }}</span>
 </div>
