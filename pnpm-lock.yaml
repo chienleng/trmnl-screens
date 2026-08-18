@@ -8,8 +8,8 @@ importers:
   .:
     dependencies:
       '@chienleng/stratum-ui':
-        specifier: ^0.11.0
-        version: 0.11.0(@internationalized/date@3.12.3)(@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.8(@typescript-eslint/types@8.66.0))(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)))(svelte@5.56.8(@typescript-eslint/types@8.66.0))(typescript@6.0.3)(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)))(svelte@5.56.8(@typescript-eslint/types@8.66.0))
+        specifier: ^0.12.2
+        version: 0.12.2(@internationalized/date@3.12.3)(@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.8(@typescript-eslint/types@8.66.0))(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)))(svelte@5.56.8(@typescript-eslint/types@8.66.0))(typescript@6.0.3)(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)))(svelte@5.56.8(@typescript-eslint/types@8.66.0))
       d3-scale:
         specifier: ^4.0.2
         version: 4.0.2
@@ -79,10 +79,10 @@ importers:
         version: 4.113.0
 
 packages:
-  '@chienleng/stratum-ui@0.11.0':
+  '@chienleng/stratum-ui@0.12.2':
     resolution:
       {
-        integrity: sha512-r0EboSm2lZdT9lGtiNAs4nPtOZPiWmhugJZbiHvMexK2d5Pun3Jx4Vd0ciOOJyDNNGKFlF3mNLbWSbNMfHy/yQ==
+        integrity: sha512-hAzOHXeRZS0u1kPgvR+6JNL4yN/0csS70uVw0LCmem6M7oKS/i9U+z22G2q9A7LYwC8VLidMyprMJUrzB814+g==
       }
     peerDependencies:
       maplibre-gl: ^4.0.0 || ^5.0.0 || ^6.0.0
@@ -2578,7 +2578,7 @@ packages:
       }
 
 snapshots:
-  '@chienleng/stratum-ui@0.11.0(@internationalized/date@3.12.3)(@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.8(@typescript-eslint/types@8.66.0))(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)))(svelte@5.56.8(@typescript-eslint/types@8.66.0))(typescript@6.0.3)(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)))(svelte@5.56.8(@typescript-eslint/types@8.66.0))':
+  '@chienleng/stratum-ui@0.12.2(@internationalized/date@3.12.3)(@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.8(@typescript-eslint/types@8.66.0))(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)))(svelte@5.56.8(@typescript-eslint/types@8.66.0))(typescript@6.0.3)(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)))(svelte@5.56.8(@typescript-eslint/types@8.66.0))':
     dependencies:
       '@types/d3-array': 3.2.2
       '@types/d3-color': 3.1.3
