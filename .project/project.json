@@ -1,0 +1,9 @@
+{
+	"schemaVersion": 1,
+	"name": "TRMNL Screens",
+	"summary": "Server-rendered e-ink dashboards for TRMNL devices, deployed on Cloudflare Workers.",
+	"lifecycle": "active",
+	"priority": "normal",
+	"owners": ["steventan"],
+	"tags": ["sveltekit", "cloudflare", "e-ink", "stratum-ui", "openelectricity"]
+}
